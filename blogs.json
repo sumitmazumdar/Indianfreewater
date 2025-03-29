@@ -1,0 +1,23 @@
+[
+  {
+    "image": "img/blog-1.jpg",
+    "date": "Jan 12 2025",
+    "title": "Innovating Water Solutions for a Healthier Future",
+    "description": "Discover how Indian Free Water is changing the game in safe and accessible water solutions for the masses.",
+    "link": "#" 
+  },
+  {
+    "image": "img/blog-2.jpg",
+    "date": "Jan 12 2025",
+    "title": "Empowering Local Communities Through Water Distribution",
+    "description": "Our initiative is about more than just water; it's about creating lasting impact in local communities.",
+    "link": "#"
+  },
+  {
+    "image": "img/blog-3.jpg",
+    "date": "Jan 12 2025",
+    "title": "Why Clean Water Is A Fundamental Right for All",
+    "description": "Water is not just a commodity—it's a basic human right. Read our thoughts on why we must prioritize clean water access.",
+    "link": "#"
+  }
+]
