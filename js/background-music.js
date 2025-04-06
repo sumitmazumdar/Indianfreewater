@@ -1,7 +1,7 @@
 // Background music functionality
 document.addEventListener('DOMContentLoaded', function() {
     // Create audio element
-    const audio = new Audio('background music.mp3'); // Use relative path
+    const audio = new Audio('background music.mp4'); // Use relative path
     audio.loop = true;
     audio.volume = 1.0;
 
