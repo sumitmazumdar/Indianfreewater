@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 postElement.className = 'col-lg-6 col-xl-4 wow fadeInUp';
                 postElement.setAttribute('data-wow-delay', `${delay}s`);
                 postElement.innerHTML = `
-                    <a href="blog.html" class="text-decoration-none text-reset d-block">
+                    <a href="blog-post.html?id=${index}" class="text-decoration-none text-reset d-block">
                         <div class="blog-item">
                             <div class="blog-img">
                                 <img src="${post.image || 'img/blog-1.jpg'}" class="img-fluid rounded-top w-100" alt="${post.title || 'Blog Image'}">
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="blog-content rounded-bottom p-4">
                                 <h4 class="h4 d-inline-block mb-3">${post.title}</h4>
                                 <p>${post.description || (post.content ? post.content.substring(0, 100) + '...' : '')}</p>
-                                <span class="fw-bold text-secondary">Explore Blogs <i class="fa fa-angle-right"></i></span>
+                                <span class="fw-bold text-secondary">Read More <i class="fa fa-angle-right"></i></span>
                             </div>
                         </div>
                     </a>
