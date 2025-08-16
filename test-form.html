@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Test - Indian Free Water</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0"><i class="fas fa-test-tube me-2"></i>Form Submission Test</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-4">This is a test form to verify if the form submission service is working properly.</p>
+                        
+                        <form id="testForm" class="needs-validation" novalidate>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="testName" class="form-label">Test Name *</label>
+                                    <input type="text" class="form-control" id="testName" name="name" required>
+                                    <div class="invalid-feedback">Please provide a name.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="testEmail" class="form-label">Test Email *</label>
+                                    <input type="email" class="form-control" id="testEmail" name="email" required>
+                                    <div class="invalid-feedback">Please provide a valid email.</div>
+                                </div>
+                                <div class="col-12">
+                                    <label for="testMessage" class="form-label">Test Message *</label>
+                                    <textarea class="form-control" id="testMessage" name="message" rows="3" required></textarea>
+                                    <div class="invalid-feedback">Please provide a message.</div>
+                                </div>
+                                
+                                <!-- Hidden fields for data collection -->
+                                <input type="hidden" id="ipAddress" name="ipAddress">
+                                <input type="hidden" id="browserInfo" name="browserInfo">
+                                <input type="hidden" name="source" value="Test Form">
+                                
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="testConsent" required>
+                                        <label class="form-check-label" for="testConsent">
+                                            I agree to this test submission
+                                        </label>
+                                        <div class="invalid-feedback">You must agree before submitting.</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane me-2"></i>Send Test
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <!-- Results Section -->
+                        <div id="results" class="mt-4" style="display: none;">
+                            <h5>Test Results:</h5>
+                            <div id="resultContent"></div>
+                        </div>
+                        
+                        <!-- Success Message -->
+                        <div id="successMessage" class="alert alert-success mt-4" style="display: none;">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Test Successful!</strong> Form submission completed.
+                        </div>
+                        
+                        <!-- Error Message -->
+                        <div id="errorMessage" class="alert alert-danger mt-4" style="display: none;">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Test Failed!</strong> <span id="errorDetails"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Troubleshooting Section -->
+                <div class="card mt-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Troubleshooting</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>If forms are not working:</h6>
+                        <ol>
+                            <li><strong>Check Email:</strong> Make sure you're checking the correct email: <code>indianfreewater@gmail.com</code></li>
+                            <li><strong>Spam Folder:</strong> Check your spam/junk folder</li>
+                            <li><strong>FormSubmit Activation:</strong> You may need to activate FormSubmit.co by submitting a test form first</li>
+                            <li><strong>Alternative Services:</strong> Consider using Web3Forms or Formspree as alternatives</li>
+                        </ol>
+                        
+                        <h6>Manual Test:</h6>
+                        <p>You can also test by sending a direct email to: <a href="mailto:indianfreewater@gmail.com">indianfreewater@gmail.com</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Collect system information
+        function collectSystemInfo() {
+            // Get IP Address
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('ipAddress').value = data.ip;
+                })
+                .catch(error => {
+                    document.getElementById('ipAddress').value = 'Unable to detect';
+                });
+
+            // Get Browser Info
+            const browserInfo = {
+                userAgent: navigator.userAgent,
+                browser: getBrowserName(),
+                version: getBrowserVersion(),
+                platform: navigator.platform,
+                language: navigator.language,
+                screenResolution: screen.width + 'x' + screen.height,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timestamp: new Date().toISOString()
+            };
+
+            document.getElementById('browserInfo').value = JSON.stringify(browserInfo);
+        }
+
+        function getBrowserName() {
+            const userAgent = navigator.userAgent;
+            if (userAgent.includes('Chrome')) return 'Chrome';
+            if (userAgent.includes('Firefox')) return 'Firefox';
+            if (userAgent.includes('Safari')) return 'Safari';
+            if (userAgent.includes('Edge')) return 'Edge';
+            if (userAgent.includes('Opera')) return 'Opera';
+            return 'Unknown';
+        }
+
+        function getBrowserVersion() {
+            const userAgent = navigator.userAgent;
+            const match = userAgent.match(/(chrome|firefox|safari|edge|opera)\/?\s*(\d+)/i);
+            return match ? match[2] : 'Unknown';
+        }
+
+        // Form submission
+        document.getElementById('testForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            collectSystemInfo();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            // Show loading state
+            const submitButton = document.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Testing...';
+            submitButton.disabled = true;
+            
+            // Show results section
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('resultContent').innerHTML = `
+                <div class="alert alert-info">
+                    <strong>Form Data:</strong><br>
+                    Name: ${data.name}<br>
+                    Email: ${data.email}<br>
+                    Message: ${data.message}<br>
+                    IP: ${data.ipAddress}<br>
+                    Source: ${data.source}
+                </div>
+            `;
+            
+            // Prepare submission data
+            const submissionData = new FormData();
+            submissionData.append('name', data.name);
+            submissionData.append('email', data.email);
+            submissionData.append('message', data.message);
+            submissionData.append('ipAddress', data.ipAddress);
+            submissionData.append('browserInfo', data.browserInfo);
+            submissionData.append('source', data.source);
+            submissionData.append('timestamp', new Date().toISOString());
+            
+            // Test FormSubmit.co
+            fetch('https://formsubmit.co/indianfreewater@gmail.com', {
+                method: 'POST',
+                body: submissionData
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                document.getElementById('resultContent').innerHTML += `
+                    <div class="alert alert-secondary">
+                        <strong>Response Status:</strong> ${response.status}<br>
+                        <strong>Response OK:</strong> ${response.ok}<br>
+                        <strong>Response Type:</strong> ${response.type}
+                    </div>
+                `;
+                
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            })
+            .then(result => {
+                console.log('Response result:', result);
+                
+                document.getElementById('resultContent').innerHTML += `
+                    <div class="alert alert-success">
+                        <strong>Response Body:</strong><br>
+                        <pre>${result}</pre>
+                    </div>
+                `;
+                
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('errorMessage').style.display = 'none';
+                document.getElementById('testForm').reset();
+            })
+            .catch(error => {
+                console.error('Submission error:', error);
+                
+                document.getElementById('resultContent').innerHTML += `
+                    <div class="alert alert-danger">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+                
+                document.getElementById('errorMessage').innerHTML = `
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Test Failed!</strong> ${error.message}
+                `;
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('successMessage').style.display = 'none';
+            })
+            .finally(() => {
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+            });
+        });
+
+        // Bootstrap validation
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            collectSystemInfo();
+        });
+    </script>
+</body>
+</html>
