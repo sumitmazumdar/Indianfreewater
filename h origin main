@@ -1,0 +1,5 @@
+[33m393f4fb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Remove embedded repo directories from index to fix push
+[33m4127fd5[m Initial import: site content, blogs, and homepage sections (WhatsApp CTA, Why It Works, Our Promise, Team)
+[33m95207bb[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix(blog): format content, responsive layout; add 2 sample posts
+[33mcc3a12b[m feat(blog): dynamic blog listings on index and blog pages; add blog-post.html and wire navigation
+[33m790a931[m Initial commit
