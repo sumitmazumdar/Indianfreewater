@@ -512,11 +512,10 @@ Indian Free Water Website
             setTimeout(() => {
                 document.getElementById('successMessage').style.display = 'none';
             }, 15000);
-            .finally(() => {
-                // Reset button state
-                submitButton.innerHTML = originalButtonText;
-                submitButton.disabled = false;
-            });
+            
+            // Reset button state
+            submitButton.innerHTML = originalButtonText;
+            submitButton.disabled = false;
         });
 
         // Bootstrap form validation

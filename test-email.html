@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Test - Indian Free Water</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h3 class="mb-0"><i class="fas fa-envelope me-2"></i>Email Functionality Test</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-4">This page tests the direct email functionality that's now implemented in your forms.</p>
+                        
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-info-circle me-2"></i>How it works:</h5>
+                            <ol>
+                                <li>When users submit forms, they see a success message</li>
+                                <li>The message includes a "Send Email Directly" button</li>
+                                <li>Clicking the button opens their email client with pre-filled information</li>
+                                <li>This ensures you always receive the data, even if form services fail</li>
+                            </ol>
+                        </div>
+                        
+                        <h5>Test the Email Function:</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Test Name</label>
+                                <input type="text" class="form-control" id="testName" value="John Doe">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Test Email</label>
+                                <input type="email" class="form-control" id="testEmail" value="john@example.com">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Test Subject</label>
+                                <input type="text" class="form-control" id="testSubject" value="Test Message">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Test Message</label>
+                                <textarea class="form-control" id="testMessage" rows="3">This is a test message to verify the email functionality is working properly.</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="button" class="btn btn-primary" onclick="testEmail()">
+                                <i class="fas fa-paper-plane me-2"></i>Test Email Function
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary ms-2" onclick="window.print()">
+                                <i class="fas fa-print me-2"></i>Print This Page
+                            </button>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h6>Expected Result:</h6>
+                            <p>When you click "Test Email Function", your default email client should open with:</p>
+                            <ul>
+                                <li><strong>To:</strong> indianfreewater@gmail.com</li>
+                                <li><strong>Subject:</strong> Contact Form: [Test Subject]</li>
+                                <li><strong>Body:</strong> Pre-filled with the form data and technical information</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Implementation Status -->
+                <div class="card mt-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Implementation Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>✅ Completed:</h6>
+                                <ul>
+                                    <li>Contact Form (contact.html)</li>
+                                    <li>Data Collection Form (form.html)</li>
+                                    <li>Direct Email Fallback</li>
+                                    <li>System Information Collection</li>
+                                    <li>User-Friendly Success Messages</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>📧 Email Features:</h6>
+                                <ul>
+                                    <li>Pre-filled email subject and body</li>
+                                    <li>Technical information included</li>
+                                    <li>Professional formatting</li>
+                                    <li>Multiple contact options</li>
+                                    <li>Print functionality</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function testEmail() {
+            const name = document.getElementById('testName').value;
+            const email = document.getElementById('testEmail').value;
+            const subject = document.getElementById('testSubject').value;
+            const message = document.getElementById('testMessage').value;
+            
+            // Get system information
+            const browserInfo = {
+                userAgent: navigator.userAgent,
+                browser: getBrowserName(),
+                platform: navigator.platform,
+                language: navigator.language,
+                screenResolution: screen.width + 'x' + screen.height,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Create email content
+            const emailSubject = encodeURIComponent(`Contact Form: ${subject}`);
+            const emailBody = encodeURIComponent(`
+Dear Indian Free Water Team,
+
+You have received a new contact form submission:
+
+Name: ${name}
+Email: ${email}
+Subject: ${subject}
+Message: ${message}
+
+Technical Information:
+IP Address: [Will be detected by email service]
+Browser Info: ${JSON.stringify(browserInfo)}
+Timestamp: ${new Date().toISOString()}
+Source: Indian Free Water Contact Form
+
+Please respond to this inquiry at your earliest convenience.
+
+Best regards,
+Indian Free Water Website
+            `);
+            
+            // Open email client
+            const mailtoLink = `mailto:indianfreewater@gmail.com?subject=${emailSubject}&body=${emailBody}`;
+            window.open(mailtoLink);
+            
+            // Show confirmation
+            alert('Email client should open with pre-filled information. If it doesn\'t open automatically, please check your email client settings.');
+        }
+        
+        function getBrowserName() {
+            const userAgent = navigator.userAgent;
+            if (userAgent.includes('Chrome')) return 'Chrome';
+            if (userAgent.includes('Firefox')) return 'Firefox';
+            if (userAgent.includes('Safari')) return 'Safari';
+            if (userAgent.includes('Edge')) return 'Edge';
+            if (userAgent.includes('Opera')) return 'Opera';
+            return 'Unknown';
+        }
+    </script>
+</body>
+</html>
