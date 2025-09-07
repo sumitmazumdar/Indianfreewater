@@ -137,53 +137,8 @@
                     <div class="col-lg-10">
                         <div class="card shadow-lg border-0">
                             <div class="card-body p-5">
-                                <!-- Auto-detected Information Display -->
-                                <div class="alert alert-info mb-4">
-                                    <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Auto-detected Information</h5>
-                                    <p class="mb-3">The following information has been automatically detected. Please copy and paste these values into the corresponding fields in the form below:</p>
-                                    
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <div class="d-flex align-items-center">
-                                                <strong class="me-2">IP Address:</strong>
-                                                <span id="ipAddressDisplay" class="text-primary fw-bold me-2">Detecting...</span>
-                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="copyToClipboard(document.getElementById('ipAddressDisplay').textContent)">
-                                                    <i class="fas fa-copy me-1"></i>Copy
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="d-flex align-items-center">
-                                                <strong class="me-2">Browser Info:</strong>
-                                                <span id="browserInfoDisplay" class="text-primary fw-bold me-2">Detecting...</span>
-                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="copyToClipboard(document.getElementById('browserInfoDisplay').textContent)">
-                                                    <i class="fas fa-copy me-1"></i>Copy
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <!-- Airtable Form Embed -->
-                                <iframe 
-                                    class="airtable-embed" 
-                                    src="https://airtable.com/embed/appGY1EL9Ma68WeAH/pagkkwbm4RHlXY2MY/form" 
-                                    frameborder="0" 
-                                    onmousewheel="" 
-                                    width="100%" 
-                                    height="533" 
-                                    style="background: transparent; border: 1px solid #ccc;">
-                                </iframe>
-                                
-                                <!-- Alternative: Direct Airtable Form Link -->
-                                <div class="text-center mt-4">
-                                    <p class="text-muted mb-3">If the form above doesn't load, please use the direct link:</p>
-                                    <a href="https://airtable.com/appGY1EL9Ma68WeAH/pagkkwbm4RHlXY2MY/form" 
-                                       target="_blank" 
-                                       class="btn btn-primary btn-lg px-5 py-3 rounded-pill">
-                                        <i class="fas fa-external-link-alt me-2"></i>Open Form in New Tab
-                                    </a>
-                                </div>
+                                <iframe class="airtable-embed" src="https://airtable.com/embed/appGY1EL9Ma68WeAH/pagkkwbm4RHlXY2MY/form" frameborder="0" onmousewheel="" width="100%" height="533" style="background: transparent; border: 1px solid #ccc;"></iframe>
                             </div>
                         </div>
                     </div>
@@ -297,78 +252,12 @@
         <!-- Template Javascript -->
         <script src="js/main.js"></script>
 
-        <!-- Form Handling Script -->
+        <!-- Airtable Form Script -->
         <script>
-            // Collect browser and system information
-            function collectSystemInfo() {
-                // Get IP Address
-                fetch('https://api.ipify.org?format=json')
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById('ipAddress').value = data.ip;
-                        document.getElementById('ipAddressDisplay').textContent = data.ip;
-                    })
-                    .catch(error => {
-                        document.getElementById('ipAddress').value = 'Unable to detect';
-                        document.getElementById('ipAddressDisplay').textContent = 'Unable to detect';
-                    });
-
-                // Get Browser Info
-                const browserInfo = {
-                    userAgent: navigator.userAgent,
-                    browser: getBrowserName(),
-                    version: getBrowserVersion(),
-                    platform: navigator.platform,
-                    language: navigator.language,
-                    cookieEnabled: navigator.cookieEnabled,
-                    onLine: navigator.onLine,
-                    screenResolution: screen.width + 'x' + screen.height,
-                    windowSize: window.innerWidth + 'x' + window.innerHeight
-                };
-
-                const browserInfoString = JSON.stringify(browserInfo);
-                document.getElementById('browserInfo').value = browserInfoString;
-                document.getElementById('browserInfoDisplay').textContent = browserInfoString;
-            }
-
-            function getBrowserName() {
-                const userAgent = navigator.userAgent;
-                if (userAgent.includes('Chrome')) return 'Chrome';
-                if (userAgent.includes('Firefox')) return 'Firefox';
-                if (userAgent.includes('Safari')) return 'Safari';
-                if (userAgent.includes('Edge')) return 'Edge';
-                if (userAgent.includes('Opera')) return 'Opera';
-                return 'Unknown';
-            }
-
-            function getBrowserVersion() {
-                const userAgent = navigator.userAgent;
-                const match = userAgent.match(/(chrome|firefox|safari|edge|opera)\/?\s*(\d+)/i);
-                return match ? match[2] : 'Unknown';
-            }
-
-            // Copy to clipboard function
-            function copyToClipboard(text) {
-                navigator.clipboard.writeText(text).then(function() {
-                    // Show a temporary success message
-                    const originalText = event.target.textContent;
-                    event.target.textContent = 'Copied!';
-                    event.target.classList.add('btn-success');
-                    event.target.classList.remove('btn-outline-primary');
-                    
-                    setTimeout(() => {
-                        event.target.textContent = originalText;
-                        event.target.classList.remove('btn-success');
-                        event.target.classList.add('btn-outline-primary');
-                    }, 2000);
-                }).catch(function(err) {
-                    console.error('Could not copy text: ', err);
-                });
-            }
-
-            // Collect system info when page loads
+            // Add any additional styling or functionality for the Airtable iframe if needed
             document.addEventListener('DOMContentLoaded', function() {
-                collectSystemInfo();
+                // You can add any custom functionality here if needed
+                console.log('Airtable form loaded successfully');
             });
         </script>
     </body>

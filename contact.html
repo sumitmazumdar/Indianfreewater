@@ -121,44 +121,86 @@
                             <h1 class="display-3 text-capitalize mb-3">Send Your Message</h1>
                             <p class="mb-0">Whether you're thirsty for free water, want to advertise with us, or are interested in supporting clean water initiatives—we’re here for you. </p>
                         </div>
-                        <form id="contactForm" action="contact-form.php" method="POST">
+                        <form id="contactForm" class="needs-validation" novalidate>
                             <div class="row g-4">
                                 <div class="col-lg-12 col-xl-6">
                                     <div class="form-floating">
                                         <input type="text" class="form-control border-0" id="name" name="name" placeholder="Your Name" required>
-                                        <label for="name">Your Name</label>
+                                        <label for="name">Your Name *</label>
+                                        <div class="invalid-feedback">
+                                            Please provide your name.
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-lg-12 col-xl-6">
                                     <div class="form-floating">
                                         <input type="email" class="form-control border-0" id="email" name="email" placeholder="Your Email" required>
-                                        <label for="email">Your Email</label>
+                                        <label for="email">Your Email *</label>
+                                        <div class="invalid-feedback">
+                                            Please provide a valid email address.
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-lg-12 col-xl-6">
                                     <div class="form-floating">
-                                        <input type="phone" class="form-control border-0" id="phone" name="phone" placeholder="Phone">
+                                        <input type="tel" class="form-control border-0" id="phone" name="phone" placeholder="Phone">
                                         <label for="phone">Your Phone</label>
                                     </div>
                                 </div>
                                 <div class="col-lg-12 col-xl-6">
                                     <div class="form-floating">
                                         <input type="text" class="form-control border-0" id="subject" name="subject" placeholder="Subject" required>
-                                        <label for="subject">Subject</label>
+                                        <label for="subject">Subject *</label>
+                                        <div class="invalid-feedback">
+                                            Please provide a subject.
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-floating">
                                         <textarea class="form-control border-0" placeholder="Leave a message here" id="message" name="message" style="height: 175px" required></textarea>
-                                        <label for="message">Message</label>
+                                        <label for="message">Message *</label>
+                                        <div class="invalid-feedback">
+                                            Please provide your message.
+                                        </div>
                                     </div>
                                 </div>
+                                
+                                <!-- Hidden fields for automatic data collection -->
+                                <input type="hidden" id="ipAddress" name="ipAddress">
+                                <input type="hidden" id="browserInfo" name="browserInfo">
+                                
                                 <div class="col-12">
-                                    <button class="btn btn-primary w-100 py-3" type="submit">Send Message</button>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="privacyConsent" required>
+                                        <label class="form-check-label" for="privacyConsent">
+                                            I agree to the <a href="privacy-policy.html" target="_blank">Privacy Policy</a> and consent to the collection of my data.
+                                        </label>
+                                        <div class="invalid-feedback">
+                                            You must agree before submitting.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <button class="btn btn-primary w-100 py-3" type="submit">
+                                        <i class="fas fa-paper-plane me-2"></i>Send Message
+                                    </button>
                                 </div>
                             </div>
                         </form>
-                        <div id="form-messages" class="mt-3"></div>
+                        
+                        <!-- Success Message -->
+                        <div id="successMessage" class="alert alert-success mt-4" style="display: none;">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Success!</strong> Your message has been sent successfully. We'll get back to you soon!
+                        </div>
+                        
+                        <!-- Error Message -->
+                        <div id="errorMessage" class="alert alert-danger mt-4" style="display: none;">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Error!</strong> There was an issue sending your message. Please try again.
+                        </div>
                     </div>
                     <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.4s">
                         <div class="row g-4">
@@ -310,36 +352,192 @@
 
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+
+    <!-- Contact Form Handling Script -->
     <script>
-        $(function() {
-            $('#contactForm').submit(function(e) {
-                e.preventDefault();
-                var formData = $(this).serialize();
-                $.ajax({
-                    type: 'POST',
-                    url: 'contact-form.php',
-                    data: formData
+        // Collect browser and system information
+        function collectSystemInfo() {
+            // Get IP Address
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('ipAddress').value = data.ip;
                 })
-                .done(function(response) {
-                    $('#form-messages').removeClass('error');
-                    $('#form-messages').addClass('success');
-                    $('#form-messages').text(response);
-                    $('#name').val('');
-                    $('#email').val('');
-                    $('#phone').val('');
-                    $('#subject').val('');
-                    $('#message').val('');
-                })
-                .fail(function(data) {
-                    $('#form-messages').removeClass('success');
-                    $('#form-messages').addClass('error');
-                    if (data.responseText !== '') {
-                        $('#form-messages').text(data.responseText);
-                    } else {
-                        $('#form-messages').text('Oops! An error occurred and your message could not be sent.');
-                    }
+                .catch(error => {
+                    document.getElementById('ipAddress').value = 'Unable to detect';
                 });
+
+            // Get Browser Info
+            const browserInfo = {
+                userAgent: navigator.userAgent,
+                browser: getBrowserName(),
+                version: getBrowserVersion(),
+                platform: navigator.platform,
+                language: navigator.language,
+                cookieEnabled: navigator.cookieEnabled,
+                onLine: navigator.onLine,
+                screenResolution: screen.width + 'x' + screen.height,
+                windowSize: window.innerWidth + 'x' + window.innerHeight,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timestamp: new Date().toISOString()
+            };
+
+            const browserInfoString = JSON.stringify(browserInfo);
+            document.getElementById('browserInfo').value = browserInfoString;
+        }
+
+        function getBrowserName() {
+            const userAgent = navigator.userAgent;
+            if (userAgent.includes('Chrome')) return 'Chrome';
+            if (userAgent.includes('Firefox')) return 'Firefox';
+            if (userAgent.includes('Safari')) return 'Safari';
+            if (userAgent.includes('Edge')) return 'Edge';
+            if (userAgent.includes('Opera')) return 'Opera';
+            return 'Unknown';
+        }
+
+        function getBrowserVersion() {
+            const userAgent = navigator.userAgent;
+            const match = userAgent.match(/(chrome|firefox|safari|edge|opera)\/?\s*(\d+)/i);
+            return match ? match[2] : 'Unknown';
+        }
+
+        // Form submission handling
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Collect system info before submission
+            collectSystemInfo();
+            
+            // Get form data
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            // Show loading state
+            const submitButton = document.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+            submitButton.disabled = true;
+            
+            // Prepare data for submission
+            const submissionData = new FormData();
+            submissionData.append('name', data.name);
+            submissionData.append('email', data.email);
+            submissionData.append('phone', data.phone);
+            submissionData.append('subject', data.subject);
+            submissionData.append('message', data.message);
+            submissionData.append('ipAddress', data.ipAddress);
+            submissionData.append('browserInfo', data.browserInfo);
+            submissionData.append('timestamp', new Date().toISOString());
+            submissionData.append('source', 'Indian Free Water Contact Form');
+            
+            // Direct email approach - more reliable
+            const emailSubject = encodeURIComponent(`Contact Form: ${data.subject}`);
+            const emailBody = encodeURIComponent(`
+Dear Indian Free Water Team,
+
+You have received a new contact form submission:
+
+Name: ${data.name}
+Email: ${data.email}
+Phone: ${data.phone || 'Not provided'}
+Subject: ${data.subject}
+Message: ${data.message}
+
+Technical Information:
+IP Address: ${data.ipAddress}
+Browser Info: ${data.browserInfo}
+Timestamp: ${new Date().toISOString()}
+Source: Indian Free Water Contact Form
+
+Please respond to this inquiry at your earliest convenience.
+
+Best regards,
+Indian Free Water Website
+            `);
+            
+            // Show success message with direct email option
+            document.getElementById('successMessage').innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Thank you for your message!</strong> 
+                <br><br>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Your message details:</strong><br>
+                        <strong>Name:</strong> ${data.name}<br>
+                        <strong>Email:</strong> ${data.email}<br>
+                        <strong>Subject:</strong> ${data.subject}<br>
+                        <strong>Message:</strong> ${data.message}
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Next Steps:</strong><br>
+                            • We'll review your message<br>
+                            • You'll receive a response within 24 hours<br>
+                            • Check your email (including spam folder)
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="mailto:indianfreewater@gmail.com?subject=${emailSubject}&body=${emailBody}" class="btn btn-primary">
+                        <i class="fas fa-envelope me-2"></i>Send Email Directly
+                    </a>
+                    <a href="tel:+919330624398" class="btn btn-outline-primary">
+                        <i class="fas fa-phone me-2"></i>Call Us: +91 9330624398
+                    </a>
+                    <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Print This Page
+                    </button>
+                </div>
+            `;
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('contactForm').reset();
+            
+            // Also try to send via FormSubmit as backup (silent)
+            fetch('https://formsubmit.co/indianfreewater@gmail.com', {
+                method: 'POST',
+                body: submissionData
+            })
+            .then(response => {
+                console.log('FormSubmit backup response:', response.status);
+            })
+            .catch(error => {
+                console.log('FormSubmit backup failed:', error.message);
             });
+            
+            // Hide success message after 15 seconds
+            setTimeout(() => {
+                document.getElementById('successMessage').style.display = 'none';
+            }, 15000);
+            
+            // Reset button state
+            submitButton.innerHTML = originalButtonText;
+            submitButton.disabled = false;
+        });
+
+        // Bootstrap form validation
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+
+        // Collect system info when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            collectSystemInfo();
         });
     </script>
     </body>

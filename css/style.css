@@ -899,4 +899,129 @@
 }
 /*** copyright end ***/
 
+/*** Blog Improvements Start ***/
+.blog-item {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.blog-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.blog-post-content {
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+
+.blog-post-content h1,
+.blog-post-content h2,
+.blog-post-content h3,
+.blog-post-content h4 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: var(--bs-dark);
+}
+
+.blog-post-content p {
+    margin-bottom: 1.5rem;
+    text-align: justify;
+}
+
+.blog-post-content ul,
+.blog-post-content ol {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+}
+
+.blog-post-content li {
+    margin-bottom: 0.5rem;
+}
+
+.blog-post-content strong {
+    color: var(--bs-primary);
+    font-weight: 600;
+}
+
+.blog-post-content em {
+    font-style: italic;
+    color: var(--bs-secondary);
+}
+
+.blog-post-content hr {
+    border-color: var(--bs-primary);
+    opacity: 0.3;
+}
+
+.blog-post-header {
+    border-bottom: 2px solid var(--bs-primary);
+    padding-bottom: 1rem;
+}
+
+.blog-meta {
+    font-size: 0.9rem;
+}
+
+.social-share {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.social-share .btn {
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.social-share .btn:hover {
+    transform: scale(1.1);
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+}
+
+.blog-content {
+    background: white;
+}
+
+.blog-content h4 {
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.blog-content p {
+    line-height: 1.6;
+}
+
+.blog-meta {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding-top: 1rem;
+    margin-top: auto;
+}
+
+@media (max-width: 768px) {
+    .blog-post-content {
+        font-size: 1rem;
+    }
+    
+    .blog-post-content h1,
+    .blog-post-content h2,
+    .blog-post-content h3,
+    .blog-post-content h4 {
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .social-share {
+        justify-content: center !important;
+        margin-top: 1rem;
+    }
+    
+    .social-share .d-flex {
+        justify-content: center;
+    }
+}
+/*** Blog Improvements End ***/
+
 
