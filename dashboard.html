@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Indian Free Water Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body{background:#f7fafc;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    .card-kpi{border-radius:12px;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
+    #map{height:360px;border-radius:10px;}
+    .small-muted{font-size:12px;color:#6b7280}
+    .upload-area{border:2px dashed #e5e7eb;border-radius:10px;padding:18px;text-align:center;background:#fff}
+    .footer-note{font-size:12px;color:#6b7280}
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h3 class="m-0">Indian Free Water Dashboard</h3>
+      <div>
+        <input id="fileInput" type="file" accept="application/json" style="display:none"/>
+        <button id="btnUpload" class="btn btn-primary me-2">Upload JSON</button>
+        <button id="btnCopySample" class="btn btn-outline-secondary">Copy sample JSON</button>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-12 col-md-6">
+        <div class="upload-area" id="dropArea">
+          <div id="dropText">Drop a JSON file here or click <strong>Upload JSON</strong></div>
+          <textarea id="pasteArea" class="form-control mt-2" rows="3" placeholder='Or paste JSON here and press Enter'></textarea>
+        </div>
+        <div class="mt-2 small-muted">Expected fields: Secret Code, UPI ID, Phone Number, Date/Time (ISO or parsable), Campaign ID, Sponsor Name, Location, Bottle Cost, Bottles Distributed</div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="row g-2">
+          <div class="col-6"><div class="card p-3 card-kpi"><div class="text-muted small">Total Redemptions</div><h4 id="kpiTotal">—</h4></div></div>
+          <div class="col-6"><div class="card p-3 card-kpi"><div class="text-muted small">Unique Redeemers</div><h4 id="kpiUnique">—</h4></div></div>
+          <div class="col-6"><div class="card p-3 card-kpi"><div class="text-muted small">Repeat Redeemers</div><h4 id="kpiRepeat">—</h4></div></div>
+          <div class="col-6"><div class="card p-3 card-kpi"><div class="text-muted small">Estimated Sponsor Cost</div><h4 id="kpiCost">—</h4></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-lg-8">
+        <div class="card p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <strong>Trends</strong>
+            <div>
+              <select id="campaignFilter" class="form-select form-select-sm"></select>
+            </div>
+          </div>
+          <canvas id="lineChart" height="120"></canvas>
+        </div>
+
+        <div class="card p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2"><strong>Campaign Performance</strong><small class="small-muted">(click bars to filter)</small></div>
+          <canvas id="barChart" height="140"></canvas>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="card p-3 mb-3">
+          <strong>Redemptions by Location</strong>
+          <canvas id="pieChart" height="200"></canvas>
+        </div>
+        <div class="card p-3">
+          <strong>Map</strong>
+          <div id="map" class="mt-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-3 mb-3">
+      <div class="d-flex justify-content-between mb-2"><strong>Raw Table</strong><div><button id="btnExportCSV" class="btn btn-sm btn-outline-secondary">Export CSV</button></div></div>
+      <div style="max-height:320px;overflow:auto"><table class="table table-sm" id="dataTable"><thead><tr id="tableHead"></tr></thead><tbody id="tableBody"></tbody></table></div>
+    </div>
+
+    <div class="text-end footer-note">Built for Indian Free Water Dashboard campaigns · Paste or upload JSON · Use the campaign filter to see per-sponsor views</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script>
+    // Helpers
+    function parseDate(v){const d=new Date(v); if(isNaN(d)) return null; return d}
+    function fmtMoney(n){return typeof n==='number'? '₹'+n.toLocaleString('en-IN') : n}
+
+    // State
+    let rawData = [];
+    let chartLine, chartBar, chartPie;
+    let map, markers = [];
+    const geocodeCache = {}; // simple client-side cache
+
+    // UI refs
+    const fileInput = document.getElementById('fileInput');
+    const btnUpload = document.getElementById('btnUpload');
+    const dropArea = document.getElementById('dropArea');
+    const pasteArea = document.getElementById('pasteArea');
+    const campaignFilter = document.getElementById('campaignFilter');
+
+    btnUpload.addEventListener('click', ()=> fileInput.click());
+    fileInput.addEventListener('change', async (e)=>{ if(e.target.files.length) handleFile(e.target.files[0]); fileInput.value=''; });
+
+    dropArea.addEventListener('dragover', e=>{ e.preventDefault(); dropArea.classList.add('border-primary'); });
+    dropArea.addEventListener('dragleave', e=>{ dropArea.classList.remove('border-primary'); });
+    dropArea.addEventListener('drop', e=>{ e.preventDefault(); dropArea.classList.remove('border-primary'); if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
+
+    pasteArea.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && (e.ctrlKey||e.metaKey)) { try{ const txt=pasteArea.value.trim(); if(!txt) return; const parsed=JSON.parse(txt); loadData(parsed); }catch(err){alert('Invalid JSON paste: '+err.message)} } });
+
+    document.getElementById('btnCopySample').addEventListener('click', ()=>{ const sample = [
+      {"Secret Code":"KOL00123","UPI ID":"abc@upi","Phone Number":"9876543210","Date/Time":"2025-09-05T10:23:00","Campaign ID":"CAM001","Sponsor Name":"CocaCola","Location":"Kolkata","Bottle Cost":10,"Bottles Distributed":10000},
+      {"Secret Code":"KOL00456","UPI ID":"xyz@upi","Phone Number":"9123456789","Date/Time":"2025-09-05T11:05:00","Campaign ID":"CAM001","Sponsor Name":"CocaCola","Location":"Kolkata","Bottle Cost":10,"Bottles Distributed":10000},
+      {"Secret Code":"DEL00987","UPI ID":"pqr@upi","Phone Number":"9801234567","Date/Time":"2025-09-06T09:15:00","Campaign ID":"CAM002","Sponsor Name":"Pepsi","Location":"Delhi","Bottle Cost":12,"Bottles Distributed":15000}
+    ]; navigator.clipboard.writeText(JSON.stringify(sample,null,2)).then(()=> alert('Sample JSON copied to clipboard — paste in the text box or save as .json'));
+    });
+
+    async function handleFile(file){
+      try{
+        const txt = await file.text();
+        const parsed = JSON.parse(txt);
+        loadData(parsed);
+      }catch(err){ alert('Failed to read/parse JSON: '+err.message) }
+    }
+
+    function validateRecord(r){ const need=['Secret Code','Date/Time','Campaign ID','Sponsor Name','Location']; for(const k of need) if(!(k in r)) return false; return true }
+
+    async function loadData(data){
+      if(!Array.isArray(data)){ alert('JSON must be an array of records'); return }
+      const ok = data.every(validateRecord);
+      if(!ok){ alert('One or more records missing required fields. See expected fields in UI.'); return }
+      rawData = data.map(r=>({
+        secret: String(r['Secret Code']||r['SecretCode']||r.secret||'').trim(),
+        upi: r['UPI ID']||r.upi||'',
+        phone: String(r['Phone Number']||r.phone||''),
+        date: parseDate(r['Date/Time']||r.date||r['DateTime']),
+        campaign: r['Campaign ID']||r.campaign||r['Campaign']||'',
+        sponsor: r['Sponsor Name']||r.sponsor||'',
+        location: r['Location']||r.location||'Unknown',
+        bottleCost: Number(r['Bottle Cost']||r.bottleCost||0),
+        bottlesDistributed: Number(r['Bottles Distributed']||r.bottlesDistributed||0)
+      })).filter(r=>r.date);
+
+      if(rawData.length===0){ alert('No valid records found (check Date/Time values)'); return }
+      prepareUI();
+    }
+
+    function prepareUI(){
+      // populate campaign filter
+      const campaigns = Array.from(new Set(rawData.map(d=>d.campaign)));
+      campaignFilter.innerHTML = '<option value="_all_">All Campaigns</option>' + campaigns.map(c=>'<option value="'+c+'">'+c+'</option>').join('');
+      campaignFilter.addEventListener('change', renderAll);
+
+      renderAll();
+      ensureMap();
+    }
+
+    function aggFiltered(){
+      const sel = campaignFilter.value || '_all_';
+      const filtered = sel==='_all_'? rawData : rawData.filter(r=>r.campaign===sel);
+      const total = filtered.length;
+      const unique = new Set(filtered.map(d=>d.phone||d.upi)).size;
+      const repeat = filtered.map(d=>d.phone||d.upi).filter((v,i,arr)=>arr.indexOf(v)!==i).length;
+      const estCost = (filtered.reduce((s,d)=>s + (d.bottleCost||0),0));
+      return {filtered, total, unique, repeat, estCost};
+    }
+
+    function renderAll(){
+      const {filtered,total,unique,repeat,estCost} = aggFiltered();
+      document.getElementById('kpiTotal').innerText = total;
+      document.getElementById('kpiUnique').innerText = unique;
+      document.getElementById('kpiRepeat').innerText = repeat;
+      document.getElementById('kpiCost').innerText = fmtMoney(estCost);
+
+      renderTable(filtered);
+      renderCharts(filtered);
+      renderMap(filtered);
+    }
+
+    function renderTable(dataset){
+      const headFields = ['Secret Code','UPI ID','Phone Number','Date/Time','Campaign ID','Sponsor Name','Location','Bottle Cost','Bottles Distributed'];
+      document.getElementById('tableHead').innerHTML = headFields.map(h=>'<th>'+h+'</th>').join('');
+      document.getElementById('tableBody').innerHTML = dataset.map(r=>'<tr>'+
+        `<td>${r.secret}</td><td>${r.upi}</td><td>${r.phone}</td><td>${r.date.toISOString()}</td><td>${r.campaign}</td><td>${r.sponsor}</td><td>${r.location}</td><td>${r.bottleCost}</td><td>${r.bottlesDistributed}</td>` +
+      '</tr>').join('');
+    }
+
+    function renderCharts(dataset){
+      // line: redemptions per day
+      const byDate = {};
+      dataset.forEach(d=>{ const key = d.date.toISOString().slice(0,10); byDate[key] = (byDate[key]||0)+1 });
+      const labels = Object.keys(byDate).sort();
+      const values = labels.map(l=>byDate[l]);
+
+      if(chartLine) chartLine.destroy();
+      const ctxL = document.getElementById('lineChart');
+      chartLine = new Chart(ctxL,{type:'line',data:{labels, datasets:[{label:'Redemptions', data:values, tension:0.3, fill:true}]}, options:{responsive:true, plugins:{legend:{display:false}}}});
+
+      // bar: by campaign
+      const byCampaign = {};
+      rawData.forEach(d=>{ byCampaign[d.campaign] = (byCampaign[d.campaign]||0)+1 });
+      const campLabels = Object.keys(byCampaign);
+      const campValues = campLabels.map(k=>byCampaign[k]);
+      if(chartBar) chartBar.destroy();
+      chartBar = new Chart(document.getElementById('barChart'),{type:'bar', data:{labels:campLabels, datasets:[{label:'Redemptions', data:campValues}]}, options:{onClick:(e, items)=>{ if(items.length){ const idx = items[0].index; campaignFilter.value = campLabels[idx]; renderAll(); } }}});
+
+      // pie: location
+      const byLoc = {};
+      dataset.forEach(d=>{ byLoc[d.location] = (byLoc[d.location]||0)+1 });
+      const locLabels = Object.keys(byLoc); const locValues = locLabels.map(l=>byLoc[l]);
+      if(chartPie) chartPie.destroy();
+      chartPie = new Chart(document.getElementById('pieChart'),{type:'pie', data:{labels:locLabels, datasets:[{data:locValues}]}, options:{responsive:true}});
+    }
+
+    // MAP
+    function ensureMap(){ if(map) return; map = L.map('map').setView([22.5726,88.3639],5); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map); }
+
+    async function geocode(location){
+      if(!location) return null;
+      if(geocodeCache[location]) return geocodeCache[location];
+      try{
+        const url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(location + ' India');
+        const res = await fetch(url, {headers:{'Accept':'application/json'}});
+        const j = await res.json();
+        if(j && j.length){ const lat = parseFloat(j[0].lat), lon = parseFloat(j[0].lon); geocodeCache[location] = [lat,lon]; return [lat,lon]; }
+      }catch(err){ console.warn('Geocode failed',err) }
+      return null;
+    }
+
+    async function renderMap(dataset){
+      ensureMap(); // clear markers
+      markers.forEach(m=>map.removeLayer(m)); markers = [];
+      const locs = Array.from(new Set(dataset.map(d=>d.location)));
+      for(const loc of locs){ const coords = await geocode(loc) || null; if(coords){ const count = dataset.filter(d=>d.location===loc).length; const m = L.circleMarker(coords,{radius:6 + Math.log(count+1)*2}).bindPopup(`<strong>${loc}</strong><br/>Redemptions: ${count}`); m.addTo(map); markers.push(m); } }
+      if(markers.length){ const group = L.featureGroup(markers); map.fitBounds(group.getBounds().pad(0.4)); }
+    }
+
+    // Export CSV
+    document.getElementById('btnExportCSV').addEventListener('click', ()=>{
+      if(!rawData.length){ alert('No data'); return }
+      const sel = campaignFilter.value||'_all_'; const filtered = sel==='_all_'? rawData : rawData.filter(d=>d.campaign===sel);
+      const header = ['Secret Code','UPI ID','Phone Number','Date/Time','Campaign ID','Sponsor Name','Location','Bottle Cost','Bottles Distributed'];
+      const rows = filtered.map(r=>[r.secret,r.upi,r.phone,r.date.toISOString(),r.campaign,r.sponsor,r.location,r.bottleCost,r.bottlesDistributed]);
+      const csv = [header.join(','), ...rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(','))].join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      saveAs(blob, 'redemptions_export.csv');
+    });
+
+    // initial empty charts
+    window.addEventListener('load', ()=>{
+      const ctx = document.getElementById('lineChart'); chartLine = new Chart(ctx,{type:'line',data:{labels:[],datasets:[{label:'Redemptions',data:[]}]},options:{responsive:true}});
+      chartBar = new Chart(document.getElementById('barChart'),{type:'bar',data:{labels:[],datasets:[{label:'Redemptions',data:[]}]},options:{}});
+      chartPie = new Chart(document.getElementById('pieChart'),{type:'pie',data:{labels:[],datasets:[{data:[]}]},options:{}});
+    });
+  </script>
+</body>
+</html>
