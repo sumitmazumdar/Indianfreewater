@@ -131,6 +131,31 @@
                     <h4 class="text-uppercase text-primary">Secure Data Collection</h4>
                     <h1 class="display-3 text-capitalize mb-3">Submit Your Information</h1>
                     <p class="mb-0">Please provide your details below. Your information will be securely stored and used for our services.</p>
+                    <p class="mb-0 animated-wake" id="wake-message">The form is just waking up, give it a minute to stretch 💤</p>
+        <style>
+            .animated-wake {
+                animation: wakeFade 2s ease-in-out infinite alternate;
+                font-weight: bold;
+                color: #007bff;
+                letter-spacing: 1px;
+                font-size: 1.15rem;
+            }
+            @keyframes wakeFade {
+                0% { opacity: 0.5; transform: scale(1) rotate(-2deg); }
+                50% { opacity: 1; transform: scale(1.05) rotate(2deg); }
+                100% { opacity: 0.7; transform: scale(1) rotate(-2deg); }
+            }
+        </style>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                    var msg = document.getElementById('wake-message');
+                    if (msg) {
+                        msg.style.display = 'none';
+                    }
+                }, 30000); // 30 seconds
+            });
+        </script>
                 </div>
                 
                 <div class="row justify-content-center">
